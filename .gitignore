@@ -1,0 +1,15 @@
+/target
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+/.lein-*
+/.nrepl-port
+db-derby-10.11.1.1-src
+derby.log
+*#
+.#*
+./src/derby2pg/spec.clj
+*.sql
