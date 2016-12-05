@@ -32,7 +32,7 @@
 (defn data-formatter [table-column]
   (cond
     (= :timestamp (:columndatatype table-column))
-    (fn [value] (escape (str value " " (System/getProperty "user.timezone"))))
+    (fn [value] (escape (if value (str value " " (System/getProperty "user.timezone")))))
     :else
     escape))
 
