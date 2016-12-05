@@ -127,7 +127,7 @@
              (key/create-key-sql "FOO" td kd3))))
 
     (is (= "create sequence FOO.BAR_INTEGER_COL_SEQ;\nalter table FOO.BAR alter column INTEGER_COL set default nextval('FOO.BAR_INTEGER_COL_SEQ');\nalter sequence FOO.BAR_INTEGER_COL_SEQ owned by FOO.BAR.INTEGER_COL;\nselect setval('FOO.BAR_INTEGER_COL_SEQ', 1);\n"
-           (sequence/create-auto-inc-sql "FOO" (get-in td ["BAR" 0]))))
+           (sequence/create-auto-inc-sql dbspec "FOO" (get-in td ["BAR" 0]))))
 
     (let [test-file  (io/file "test.sql")]
       (when (.exists test-file) (is (.delete test-file)))

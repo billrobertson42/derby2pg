@@ -39,7 +39,7 @@
 
     (println "Generating auto increment sequences")
     (spit file-name "\n-- auto increment sequences\n\n" :append true)
-    (doseq [sql (map #(create-auto-inc-sql schema-name %) 
+    (doseq [sql (map #(create-auto-inc-sql derby-spec schema-name %) 
                      (filter :autoincrementinc (apply concat (vals table-data))))]
       (spit file-name (str sql "\n\n") :append true))
 
