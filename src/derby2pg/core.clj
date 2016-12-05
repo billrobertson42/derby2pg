@@ -49,7 +49,8 @@
     ))
 
 (defn -main [& args]
-  (let [file-name (args 0)
+  (let [args (vec args)
+        file-name (args 0)
         derby-spec (args 1)
         schema-name (args 2)
         include-data (Boolean/parseBoolean (args 3))
