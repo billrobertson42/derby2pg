@@ -45,12 +45,17 @@ FIXME
 
 ## Notes
 
-Derby data types known not to work, fully or partially
+### Partially supported data types
+
+These Derby data types are known not to work. The program can should
+be able to tables for these columns but the export does not work. This
+might be addressable by adding an appropriate function to
+derby2pg.data/fata-formatter function.
 
 * XML -> Works for table generation, fails data export
 * CLOB -> Works for table generation, fails data export
 
-Derby data types not tested:
+### Derby data types not tested
 
 * BLOB
 * CHAR FOR BIT DATA
