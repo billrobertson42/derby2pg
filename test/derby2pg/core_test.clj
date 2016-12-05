@@ -100,8 +100,9 @@
 
     (let [buffer (java.io.StringWriter.)
           _ (data/create-copy-sql dbspec "FOO" (td "BAR") buffer)
-          copy-sql (str buffer)]
-      (is (= "copy FOO.BAR (integer_col, smallint_col, bigint_col, double_col, real_col, decimal_1_col, decimal_2_col, date_col, time_col, timestamp_col, varchar_col, long_varchar_col, char_col) from stdin;\n1\t1\t2\t3.0\t4.0\t5\t6.00\t2016-12-01\t04:00:00\t1960-01-01 23:03:20.0\ttc\tlvc\tchar\\tx    \n\\.\n\n" copy-sql)))
+          copy-sql (str buffer)
+          tz (System/getProperty "user.timezone")]
+      (is (= (str "copy FOO.BAR (integer_col, smallint_col, bigint_col, double_col, real_col, decimal_1_col, decimal_2_col, date_col, time_col, timestamp_col, varchar_col, long_varchar_col, char_col) from stdin;\n1\t1\t2\t3.0\t4.0\t5\t6.00\t2016-12-01\t04:00:00\t1960-01-01 23:03:20.0 " tz "\ttc\tlvc\tchar\\tx    \n\\.\n\n") copy-sql)))
     
     (let [id (index/get-index-data dbspec "FOO")
           id-sql (index/create-index-sql "FOO" td (first id))]

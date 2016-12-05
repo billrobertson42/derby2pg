@@ -13,28 +13,38 @@
         (.replace "\u000b" "\\v"))
     "\\N"))
 
-(defn row-data [columns tuple]
-  (let [row-data (map tuple columns)]
-    (str/join "\t" (map escape row-data))))
+(defn row-data [columns data-formatters tuple]
+  (let [raw-data (map tuple columns)
+        fmt-data (map-indexed (fn [i val] ((data-formatters i) val)) raw-data)]
+    (str/join "\t" fmt-data)))
 
-(defn copy-data-sql[schema table-name columns rows output-writer]
+(defn copy-data-sql[schema table-name columns data-formatters rows output-writer]
   (when (seq rows)
     (.write output-writer 
             (str "copy " schema "." table-name " ("
                  (str/join ", " (map name columns))
                  ") from stdin;\n"))
     (doseq [row (take 1000 rows)]
-      (.write output-writer (str (row-data columns row) "\n")))
+      (.write output-writer (str (row-data columns data-formatters row) "\n")))
     (.write output-writer "\\.\n\n")
-    (recur schema table-name columns (drop 1000 rows) output-writer)))
+    (recur schema table-name columns data-formatters (drop 1000 rows) output-writer)))
+
+(defn data-formatter [table-column]
+  (cond
+    (= :timestamp (:columndatatype table-column))
+    (fn [value] (escape (str value " " (System/getProperty "user.timezone"))))
+    :else
+    escape))
 
 (defn create-copy-sql [derby-spec schema table-columns output-writer]
   (let [table-name (:tablename (first table-columns))
         columns (map (comp keyword str/lower-case) (map :columnname table-columns))
+        data-formatters (mapv data-formatter table-columns)
         query (str "select " (str/join ", " (map name columns)) "\n"
                    "from " schema "." table-name)]
     (with-open [conn (connect/create derby-spec)
                 cursor (jdbc/fetch-lazy conn query)]
-      (copy-data-sql schema table-name columns (jdbc/cursor->lazyseq cursor) output-writer))))
+      (copy-data-sql schema table-name columns data-formatters 
+                     (jdbc/cursor->lazyseq cursor) output-writer))))
     
                                       
