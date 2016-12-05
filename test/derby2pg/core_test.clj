@@ -9,8 +9,11 @@
             [derby2pg.sequence :as sequence]
             [clojure.pprint :refer [pprint]]
             [clojure.string :as str]
+            [clojure.java.io :as io]
             [clojure.test :refer :all])
   )
+
+;; integration test that covers most of the code
 
 (def dbspec "jdbc:derby:memory:derby2pg")
 
@@ -44,8 +47,6 @@
 
 ])
 
-(def utd (atom nil))
-     
 (defn test-with-database [f]
   (try
     (with-open [conn (connect/create (str dbspec ";create=true"))]
@@ -61,9 +62,8 @@
 
 (deftest tests
   (let [td (table/get-table-data dbspec "FOO")]
-    (reset! utd td)
     (is (= 2 (count td)))
-    (let [table-sql (table/create-table-sql "DOT" (td "BAR"))]
+    (let [table-sql (table/create-table-sql "FOO" (td "BAR"))]
       (is (= [{:autoincrementstart 1, :columndatatype :integer, :scale 0, :precision 10, 
                :max-width 4, :tablename "BAR", :columnname "INTEGER_COL", 
                :autoincrementinc 1, :nullable false, :text false} 
@@ -96,7 +96,7 @@
              (td "BAR")))
       (is (= [{:tablename "BAR2", :columnname "Z", :columndatatype :integer, :text false, :max-width 4, :precision 10, :scale 0, :nullable true}]
              (td "BAR2")))
-      (is (= "create table DOT.BAR (\n    INTEGER_COL integer not null,\n    SMALLINT_COL smallint not null,\n    BIGINT_COL bigint,\n    DOUBLE_COL double,\n    REAL_COL real,\n    DECIMAL_1_COL numeric (10),\n    DECIMAL_2_COL numeric (10, 2),\n    DATE_COL date default current_date,\n    TIME_COL time,\n    TIMESTAMP_COL timestamp with time zone,\n    VARCHAR_COL text,\n    LONG_VARCHAR_COL text,\n    CHAR_COL text\n);\n" table-sql)))
+      (is (= "create table FOO.BAR (\n    INTEGER_COL integer not null,\n    SMALLINT_COL smallint not null,\n    BIGINT_COL bigint,\n    DOUBLE_COL double precision,\n    REAL_COL real,\n    DECIMAL_1_COL numeric (10),\n    DECIMAL_2_COL numeric (10, 2),\n    DATE_COL date default current_date,\n    TIME_COL time,\n    TIMESTAMP_COL timestamp with time zone,\n    VARCHAR_COL text,\n    LONG_VARCHAR_COL text,\n    CHAR_COL text\n);\n" table-sql)))
 
     (let [buffer (java.io.StringWriter.)
           _ (data/create-copy-sql dbspec "FOO" (td "BAR") buffer)
@@ -122,11 +122,16 @@
              (key/create-key-sql "FOO" td kd1)))
       (is (= "alter table FOO.BAR add constraint bar_key primary key(INTEGER_COL);"
              (key/create-key-sql "FOO" td kd2)))
-      (is (= "alter table FOO.BAR2 add constraint bar2_bar_z_fk foreign key(Z) references BAR(Z);"
+      (is (= "alter table FOO.BAR2 add constraint bar2_bar_z_fk foreign key(Z) references FOO.BAR(INTEGER_COL);"
              (key/create-key-sql "FOO" td kd3))))
 
-    (is (= "create sequence DOT.BAR_INTEGER_COL_SEQ;\nalter table DOT.BAR alter column INTEGER_COL set default nextval('DOT.BAR_INTEGER_COL_SEQ');\nalter sequence DOT.BAR_INTEGER_COL_SEQ owned by DOT.BAR.INTEGER_COL;\nselect setval('DOT.BAR_INTEGER_COL_SEQ', 1);\n"
-           (sequence/create-auto-inc-sql "DOT" (get-in td ["BAR" 0]))))
+    (is (= "create sequence FOO.BAR_INTEGER_COL_SEQ;\nalter table FOO.BAR alter column INTEGER_COL set default nextval('FOO.BAR_INTEGER_COL_SEQ');\nalter sequence FOO.BAR_INTEGER_COL_SEQ owned by FOO.BAR.INTEGER_COL;\nselect setval('FOO.BAR_INTEGER_COL_SEQ', 1);\n"
+           (sequence/create-auto-inc-sql "FOO" (get-in td ["BAR" 0]))))
+
+    (let [test-file  (io/file "test.sql")]
+      (when (.exists test-file) (is (.delete test-file)))
+      (core/-main "test.sql" dbspec "FOO" "true")
+      (is (.exists test-file)))
 
     ))
     
