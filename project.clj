@@ -10,5 +10,5 @@
   :profiles {:dev {:dependencies [[ring/ring-devel "1.4.0"]]}}
   :main derby2pg.core
   :aot [derby2pg.core]
-
+  :uberjar-name "derby2pg.jar"
 )
