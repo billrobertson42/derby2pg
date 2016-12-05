@@ -71,18 +71,18 @@
     "U" (str " on " operation " set null")
     "C" (str " on " operation " cascade")))
 
-(defn format-fk-reference [table-data key-datum]
+(defn format-fk-reference [schema referenced-columns key-datum]
   (if (= "F" (:type key-datum))
     (let [fk-ref {:column-indexes (:ref-column-indexes key-datum)
                   :tablename (:ref_tablename key-datum)}]
-      (str " references " (:ref_tablename key-datum) 
-           (format-referenced-columns table-data fk-ref)
+      (str " references " schema "." (:ref_tablename key-datum) 
+           (format-referenced-columns referenced-columns fk-ref)
            (format-rule "update" (:updaterule key-datum))
            (format-rule "delete" (:deleterule key-datum))))))
 
-(defn constraint-name [table-data key-datum]
-  (let [columns (mapv :columnname table-data)
-        ref-columns (mapv :columnname table-data)]
+(defn constraint-name [table-columns key-datum]
+  (let [columns (mapv :columnname table-columns)
+        ref-columns (mapv :columnname table-columns)]
     (condp = (:type key-datum)
       "U" (str/lower-case 
            (str (:tablename key-datum) "_key_"
@@ -96,13 +96,16 @@
                 (str/join "_" (map columns (:column-indexes key-datum))) "_fk"))
       )))
 
-
 (defn create-key-sql [schema table-data key-datum]
-  (let [table-data (table-data (:tablename key-datum))]
+  (let [table-columns (table-data (:tablename key-datum))
+        referenced-columns (if (= "F" (:type key-datum)) 
+                             (table-data (:ref_tablename key-datum))
+                             [])]
+
     (str "alter table " schema "." (:tablename key-datum) " add constraint "
-         (constraint-name table-data key-datum) " "
+         (constraint-name table-columns key-datum) " "
          (format-constraint-type key-datum) 
-         (format-referenced-columns table-data key-datum)
-         (format-fk-reference table-data key-datum) ";"
+         (format-referenced-columns table-columns key-datum)
+         (format-fk-reference schema referenced-columns key-datum) ";"
          )))
        
