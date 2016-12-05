@@ -65,6 +65,7 @@
     (str "    " (:columnname column) " " 
          (cond 
            (= (:columndatatype column) :timestamp) "timestamp with time zone"
+           (= (:columndatatype column) :double) "double precision"
            (or (:text column) (= (:columndatatype column) :xml)) "text"           
            :else (name datatype))
          (not-null-clause column) 
