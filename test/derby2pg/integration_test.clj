@@ -1,4 +1,4 @@
-(ns derby2pg.core-test
+(ns derby2pg.integration-test
   (:require [jdbc.core :as jdbc]
             [derby2pg.connect :as connect]
             [derby2pg.core :as core]
@@ -12,8 +12,6 @@
             [clojure.java.io :as io]
             [clojure.test :refer :all])
   )
-
-;; integration test that covers most of the code
 
 (def dbspec "jdbc:derby:memory:derby2pg")
 
@@ -43,9 +41,7 @@
                          'tc', 'lvc', 'char\tx')"
    "create index an_index on foo.bar(timestamp_col)"
    "create table foo.bar2 (z integer)"
-   "alter table foo.bar2 add constraint moogie foreign key(z) references foo.bar(integer_col)"
-
-])
+   "alter table foo.bar2 add constraint moogie foreign key(z) references foo.bar(integer_col)"])
 
 (defn test-with-database [f]
   (try
