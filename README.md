@@ -2,48 +2,136 @@
 
 A Clojure toolkit for migrating Apache Derby databases to PostgreSQL
 
-## Usage
+# Usage
 
-FIXME
+## Prerequistites
 
-## TODO
+First, you will need to have Java installed. If you're runing Apache
+Derby you probably alreahd have that covered.
 
-* DONE Generate schema
-** DONE create table sql
-*** DONE table name
-*** DONE column name
-*** DONE column datatype
-*** DONE nullability
-*** DONE column default values
-** DONE generate indexes
-*** DONE single/multi column
-*** DONE ascending/descending
-*** DONE use postgres index names rather than derby names
-** DONE generate constraints
-*** DONE generate foreign key constraints
-*** DONE generate unique primary key constraints
-** DONE serial/bigserial generation
-* DONE Enumerate tables
-** DONE generate scheme for tables
-** DONE generate copy statement for tables
-** DONE generate indexes for tables
-** DONE generate primary and keys for tables
-** DONE generate sequences
-* DONE Copy data
-** DONE copy statement
-** DONE all tuples
-** DONE escape values in tuples
-** DONE end of input indicator
-** DONE FIX: exclude tables mechanism
-* TODO document: unhandled aliases/synonyms
-* TODO document: unhandled triggers/functions/procedures
-* TODO document: unhandled views
-* TODO document: unahndled check constraints
-* TODO document: unhandled deferred constraints
-* DONE document: unhandled xml data type
-* TODO create a main and executable jar
+## Download
+
+The jar file `derby2pg.jar` is available [here] (). It is an
+executable jar file.
+
+TODO: Provide link
+
+If you do not wish to build, please see the instructions in the Clone
+and Build section below.
+
+## Clone and Build
+
+If you have already downlaod the jar file, you can skip this step. If
+not, then follow the instructions below.
+
+First, you must clone this repository from Git.
+
+Second, you must install [Leiningen](http://leiningen.org/), and build
+the jar file.  Open the terminal or cmd prompt, cd to the project base
+directory (it contains `project.clj`).  Then issue the following
+command:
+
+    lein uberjar
+
+Which will create `derby2pg.jar` in the `target` sub-directory. For example:
+
+    $ lein uberjar
+    Compiling derby2pg.core
+    Compiling derby2pg.core
+    Created /Users/bill/dev/gt/code/derby2pg/target/derby2pg-0.1.0-SNAPSHOT.jar
+    Created /Users/bill/dev/gt/code/derby2pg/target/derby2pg.jar
+
+## Run the program
+
+The program is run from the terminal or command prompt. For example:
+
+    java -jar derby2pg.jar outfile-name jdbc-url schema-name include-data [tables to exclude]
+
+Arguments
+
+* `outfile-name` The name of the output file to generate. e.g. "output.sql"
+* `jdbc-url` The jdbc url to connect to the database to export
+* `schema-name` The name of the schema in the Derby database to export. Must match the case of the schema in the database, which is usually upper case.
+* `include-data` Must be "true" or "false" If true, it will generate copy statements for the data in exported tables.
+* [tables to exclude] *optional* list of tables to ignore by the exported. Must match the case name of the table in the database, which is usually upper case.
+
+Example
+
+    $ java -jar derby2pg.jar output.sql "jdbc:derby:/path/to/db;user=your_username;password=your_password" DOT true
+    Generate create schema statement
+    Generating tables
+    Generating copy statements for SALE
+    Generating copy statements for LINE_ITEM
+    ...
+    Generating copy statements for CUSTOMER
+    Generating indexes
+    Generating keys
+    Generating auto increment sequences
+    done
+
+This generates a script that you can inspect, and possibly modify if
+you wish. You should be able to run this script in psql or pgadmin.
+
+    $ psql
+
+    bill=# \i output.sql
+    CREATE TABLE
+    CREATE TABLE
+    ...
+    CREATE TABLE
+    COPY 11
+    COPY 10000
+    ...
+    COPY 10000
+    COPY 243
+    CREATE INDEX
+    CREATE INDEX
+    ...
+    CREATE INDEX
+    ALTER TABLE
+    ALTER TABLE
+    ...
+    ALTER TABLE
+    
+    CREATE SEQUENCE
+    ALTER TABLE
+    ALTER SEQUENCE
+     setval 
+    --------
+         17
+    (1 row)
+    ...
+    bill=#
 
 ## Notes
+
+### Data Types
+
+* Derby string types become `text` columns in the output script
+* Derby numeric types are identical in the output script, e.g. a `bigint` column in the Derby database will be a `bigint` column in the output script
+* Derby `time` and `date` columns are identical in the output script
+* Derby `timestamp` columns are translated to PostgreSQL `timestamp with timezone columns`
+
+### Timezone handling
+
+The Derby `timestamp` data type does not have a timezone. To
+accomodate this when translating to a timestamp column with a time
+zone, the program adds the JVM's default timezone when creating the
+copy statements. The JVM's default timezone usually defaults to your
+computer's timezone.
+
+To change this behavior, you simply need to configure the JVM's
+default timezone with a system property when running the program.  You
+should use full timezone name in the TZ column
+(here)[https://en.wikipedia.org/wiki/List_of_tz_database_time_zones]. e.g. `America/New_York`
+or `GMT`. To do this, you will need to pass a `-Duser.timezone=XXX`
+argument to the JVM. For example:
+
+    java -Duser.timezone=GMT -jar derby2pg.jar outfile-name jdbc-url schema-name include-data [tables to exclude]
+
+If you only ever used Derby on machines that were all on the same time
+zone, and you code had no special accomodations for dealing with time
+zones, you will probably be fine with the default timestamp behavior.
 
 ### Partially supported data types
 
@@ -62,6 +150,16 @@ derby2pg.data/fata-formatter function.
 * VARCHAR FOR BIT DATA
 * LONG VARCHAR FOR BIT DATA
 * User defined types
+
+### Derby Features not supported
+
+The program will not export the following entities.
+
+* aliases/synonyms
+* triggers/functions/procedures
+* views
+* check constraints
+* deferred constraints
 
 ## License
 
