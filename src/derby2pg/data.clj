@@ -24,10 +24,10 @@
             (str "copy " schema "." table-name " ("
                  (str/join ", " (map name columns))
                  ") from stdin;\n"))
-    (doseq [row (take 1000 rows)]
+    (doseq [row (take 10000 rows)]
       (.write output-writer (str (row-data columns data-formatters row) "\n")))
     (.write output-writer "\\.\n\n")
-    (recur schema table-name columns data-formatters (drop 1000 rows) output-writer)))
+    (recur schema table-name columns data-formatters (drop 10000 rows) output-writer)))
 
 (defn data-formatter [table-column]
   (cond
