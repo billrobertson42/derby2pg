@@ -15,7 +15,7 @@ The jar file `derby2pg.jar` is available [on bintray]
 (https://bintray.com/billrobertson42/generic/derby2pg/0.1.0?sort=&order=#files). It
 is an executable jar file.
 
-If you do not wish to build, please see the instructions in the Clone
+If wish to build the code yourself, please see the instructions in the Clone
 and Build section below.
 
 ## Clone and Build
@@ -26,9 +26,9 @@ not, then follow the instructions below.
 First, you must clone this repository from Git.
 
 Second, you must install [Leiningen](http://leiningen.org/), and build
-the jar file.  Open the terminal or cmd prompt, cd to the project base
-directory (it contains `project.clj`).  Then issue the following
-command:
+the jar file.  To do this, open the terminal or cmd prompt, cd to the 
+project base directory (it contains `project.clj`).  Then issue the 
+following command:
 
     lein uberjar
 
@@ -42,16 +42,16 @@ Which will create `derby2pg.jar` in the `target` sub-directory. For example:
 
 ## Run the program
 
-The program is run from the terminal or command prompt. For example:
+The program is run from the terminal or command prompt. 
 
     java -jar derby2pg.jar outfile-name jdbc-url schema-name include-data [tables to exclude]
 
 Arguments
 
 * `outfile-name` The name of the output file to generate. e.g. "output.sql"
-* `jdbc-url` The jdbc url to connect to the database to export
-* `schema-name` The name of the schema in the Derby database to export. Must match the case of the schema in the database, which is usually upper case.
-* `include-data` Must be "true" or "false" If true, it will generate copy statements for the data in exported tables.
+* `jdbc-url` The jdbc url to use to connect to the Derby database to export
+* `schema-name` The name of the schema in the Derby database to export. Must exactly match the case of the schema in the database, which is usually upper case.
+* `include-data` Must be either `true` or `false` If `true`, the program will generate copy statements for the data in exported tables.
 * [tables to exclude] *optional* list of tables to ignore by the exported. Must match the case name of the table in the database, which is usually upper case.
 
 Example
@@ -71,9 +71,12 @@ Example
 This generates a script that you can inspect, and possibly modify if
 you wish. You should be able to run this script in psql or pgadmin.
 
+Example
+
     $ psql
 
     bill=# \i output.sql
+    CREATE SCHEMA
     CREATE TABLE
     CREATE TABLE
     ...
@@ -109,7 +112,7 @@ you wish. You should be able to run this script in psql or pgadmin.
 * Derby string types become `text` columns in the output script
 * Derby numeric types are identical in the output script, e.g. a `bigint` column in the Derby database will be a `bigint` column in the output script
 * Derby `time` and `date` columns are identical in the output script
-* Derby `timestamp` columns are translated to PostgreSQL `timestamp with timezone columns`
+* Derby `timestamp` columns are translated to PostgreSQL `timestamp with time zone` columns
 
 ### Timezone handling
 
@@ -126,20 +129,20 @@ should use full timezone name in the TZ column
 or `GMT`. To do this, you will need to pass a `-Duser.timezone=XXX`
 argument to the JVM. For example:
 
-    java -Duser.timezone=GMT -jar derby2pg.jar outfile-name jdbc-url schema-name include-data [tables to exclude]
+    java -Duser.timezone=GMT -jar derby2pg.jar output.sql "jdbc:derby:/path/to/db;user=your_username;password=your_password" DOT true
 
 If you only ever used Derby on machines that were all on the same time
-zone, and you code had no special accomodations for dealing with time
+zone, and you code has no special accomodations for dealing with time
 zones, you will probably be fine with the default timestamp behavior.
 
 ### Partially supported data types
 
 These Derby data types are known not to work. The program can should
-be able to tables for these columns but the export does not work. This
-might be addressable by adding an appropriate function to
-derby2pg.data/fata-formatter function.
+be able to create tables for these columns but the export does not work. 
+This might be addressable by adding an appropriate function to
+derby2pg.data/data-formatter function.
 
-* XML -> Works for table generation, fails data export
+* XML -> Works for table generation, fails data export.
 * CLOB -> Works for table generation, fails data export
 
 ### Derby data types not tested
