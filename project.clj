@@ -1,4 +1,4 @@
-(defproject derby2pg "0.1.0-SNAPSHOT"
+(defproject derby2pg "0.1.0"
   :description "Tool to jumpstart Apache Derby to Postgres data transfer"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
