@@ -11,10 +11,9 @@ Derby you probably alreahd have that covered.
 
 ## Download
 
-The jar file `derby2pg.jar` is available [here] (). It is an
-executable jar file.
-
-TODO: Provide link
+The jar file `derby2pg.jar` is available [on bintray]
+(https://bintray.com/billrobertson42/generic/derby2pg/0.1.0?sort=&order=#files). It
+is an executable jar file.
 
 If you do not wish to build, please see the instructions in the Clone
 and Build section below.
