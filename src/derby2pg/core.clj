@@ -14,6 +14,10 @@
 
     (spit file-name (str "-- generated at " (java.util.Date.) 
                          "\n\n--tables"))
+
+    (println "Generate create schema statement")
+    (spit file-name (str "create schema " schema-name ";\n\n"))
+
     (println "Generating tables")
     (doseq [create table-sql]
       (spit file-name (str "\n" create) :append true))
