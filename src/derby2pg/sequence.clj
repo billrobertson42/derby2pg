@@ -7,7 +7,7 @@
   (with-open [conn (connect/create dbspec)]
     (let [query (str "select max(" (:columnname column) ") max_val from " schema "."
                      (:tablename column))]
-      (:max_val (first (jdbc/fetch conn query))))))
+      (or (:max_val (first (jdbc/fetch conn query))) 1))))
 
 (defn create-auto-inc-sql [dbspec schema column]
   (let [seq-name (str schema \. (:tablename column) \_ (:columnname column) "_SEQ")
