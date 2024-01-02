@@ -2,18 +2,25 @@
 
 A Clojure toolkit for migrating Apache Derby databases to PostgreSQL
 
+# Version 0.21.0
+
+This version updates jar files to the latest versions, and also adds the
+network client to the uberjar, so it should also work through the network
+driver as well as local.
+
 # Usage
 
 ## Prerequistites
 
-First, you will need to have Java installed. If you're runing Apache
-Derby you probably alreahd have that covered.
+First, you will need to have Java 21 installed. If you're runing Apache
+Derby you probably already have that covered.
+
+Java 21 is required for the latest version because the latest version
+of Derby requires it.
 
 ## Download
 
-The jar file `derby2pg.jar` is available [on bintray]
-(https://bintray.com/billrobertson42/generic/derby2pg/0.1.0?sort=&order=#files). It
-is an executable jar file.
+Will attempt to make a release available for download on Github. Check the releases tab.
 
 If wish to build the code yourself, please see the instructions in the Clone
 and Build section below.
@@ -137,7 +144,7 @@ zones, you will probably be fine with the default timestamp behavior.
 
 ### Partially supported data types
 
-These Derby data types are known not to work. The program can should
+These Derby data types are known not to work. The program should
 be able to create tables for these columns but the export does not work. 
 This might be addressable by adding an appropriate function to
 derby2pg.data/data-formatter function.
@@ -165,7 +172,7 @@ The program will not export the following entities.
 
 ## License
 
-Copyright © 2016 Bill Robertson
+Copyright © 2016-2023 Bill Robertson
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
